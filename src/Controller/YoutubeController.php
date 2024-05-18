@@ -12,17 +12,23 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class YoutubeController extends AbstractController
 {
+    public function __construct(private YoutubeApiService $youtubeApiService)
+    {
+
+    }
     #[Route('/', name: 'app_home')]
     public function index(Request $request): Response
     {
         $form = $this->createForm(YoutubeUrlFormType::class);
         $form->handleRequest($request);
+
         if ($form->isSubmitted()) {
             $data = $form->getData();
             $playlistUrl = $data['playlistUrl'];
             parse_str(parse_url($playlistUrl,PHP_URL_QUERY),$query);
             $playlistId = $query['list'];
-            if ($playlistId){
+
+            if ($this->youtubeApiService->checkIfPlaylistExists($playlistId)){
                 return $this->redirectToRoute('playlist_videos',[
                    'playlistId' => $playlistId
                 ]);
@@ -38,9 +44,14 @@ class YoutubeController extends AbstractController
     }
 
     #[Route('/show/videos/{playlistId}',name: 'playlist_videos')]
-    public function showPlaylistVideos(String $playlistId, YoutubeApiService $youtubeApiService): Response
+    public function showPlaylistVideos(String $playlistId): Response
     {
-        return $this->render('youtube/playlist.html.twig');
+        $playlistInfo = $this->youtubeApiService->getPlaylistInfo($playlistId);
+        return $this->render('youtube/playlist.html.twig',[
+            'title' => $playlistInfo['title'],
+            'description' => $playlistInfo['description'],
+            'channelTitle' => $playlistInfo['channelTitle']
+        ]);
     }
 
 

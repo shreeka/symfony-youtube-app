@@ -7,13 +7,15 @@
         <div class="row justify-content-center mt-5">
             <div class="col-md-6">
             {{ form(form) }}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+            {% endfor %}
             </div>
+
         </div>
-        {% for message in app.flashes('error') %}
-        <div class="alert alert-danger">
-            {{ message }}
-        </div>
-        {% endfor %}
+
 
     </div>
 {% endblock %}
